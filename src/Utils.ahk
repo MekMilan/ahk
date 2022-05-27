@@ -1,0 +1,4 @@
+rmtt() 
+{
+    ToolTip
+}
