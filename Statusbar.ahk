@@ -1,25 +1,31 @@
-﻿
-global current_window           := ""
-global current_window_switch    := 1 ; 0 = OFF | 1 = ON
-global volume_switch            := 1 ; 0 = OFF | 1 = ON
-global statusbar_gui_color        := "262626"
-global statusbar_font_color       := "ffffff"
-global statusbar_ancient_color    := "8000ff"
+﻿;[Configs]----------------------------------------------
+
+;  0 = OFF | 1 = ON
+
+global widget_clock             := 1
+global current_window_switch    := 1
+global widget_volume            := 1
+
+;-------------------------------------------------------
+
 SetTimer, Update, 200
+global current_window           := ""
+global statusbar_gui_color      := "262626"
+global statusbar_font_color     := "ffffff"
+global statusbar_ancient_color  := "8000ff"
 
 gui, -caption +AlwaysOnTop +ToolWindow
 gui, margin, 2,2
 gui, font, s10 c%statusbar_font_color%, Consolas
 gui, Color, c%statusbar_gui_color%
 
-gui, add, text, ym v_workspace_1 g_goto_workspace_1, [1]
-gui, add, text, ym v_workspace_2 g_goto_workspace_2, [2]
+gui, add, text, ym v_workspace_1 gfunc_goto_workspace_1, [1]
+gui, add, text, ym v_workspace_2 gfunc_goto_workspace_2, [2]
 gui, add, text, ym, |
-gui, add, text, Center ym w15 h16 g_window_close, X
-gui, add, text, Center ym w15 h16 g_window_maximize, Λ
-gui, add, text, Center ym w15 h16 g_window_minimize, ‒
+gui, add, text, Center ym w15 h16 gfunc_window_close, X
+gui, add, text, Center ym w15 h16 gfunc_window_maximize, Λ
+gui, add, text, Center ym w15 h16 gfunc_window_minimize, ‒
 gui, add, text, ym, |
-
 
 ; current window
 gui, add, text, ym v_current_window g_get_title_current_window, %current_window%
@@ -32,56 +38,44 @@ gui, add, text, ym v_clock
 
 gui, show, NoActivate w%A_ScreenWidth% y0 h22
 
-_window_close()
-{
+func_window_close() {
 	WinClose, %current_window%
 }
-_window_maximize()
-{
+func_window_maximize() {
 	WinMaximize, %current_window%
 }
-_window_minimize()
-{
+func_window_minimize() {
 	WinMinimize, %current_window%
 }
 
-_goto_workspace_1()
-{
+func_goto_workspace_1() {
     VD.goToDesktopNum(1)
     gui, font, s10 c%statusbar_ancient_color%, Consolas
     GuiControl, font, _workspace_1
     reset_workspace_colors(1)
 }
-_goto_workspace_2()
-{
+func_goto_workspace_2() {
     VD.goToDesktopNum(2)
     gui, font, s10 c%statusbar_ancient_color%, Consolas
     GuiControl, font, _workspace_2
     reset_workspace_colors(2)
 }
-reset_workspace_colors(index)
-{
-    if (index == 1)
-    {
+reset_workspace_colors(index) {
+    if (index == 1) {
         gui, font, s10 c%statusbar_font_color%, Consolas
         GuiControl, font, _workspace_2
     }
-    else
-    {
+    else {
         gui, font, s10 c%statusbar_font_color%, Consolas
         GuiControl, font, _workspace_1
     }  
 }
 
-current_window()
-{
-    if (current_window_switch == 1)
-    {
+current_window() {
+    if (current_window_switch == 1) {
         WinGetTitle, title, a
-        if (title != "Statusbar.ahk" && title != current_window)
-        {
-            if (title == "Program Manager")
-            {
+        if (title != "Statusbar.ahk" && title != current_window) {
+            if (title == "Program Manager" || title == "") {
                 title := "Desktop"
             }
             current_window := title
@@ -93,10 +87,8 @@ current_window()
         }
     }
 }
-_get_title_current_window()
-{
-    if (current_window_switch == 1)
-    {
+_get_title_current_window() {
+    if (current_window_switch == 1) {
         Clipboard := current_window
 
         gui, font, s10 c%statusbar_ancient_color%, Consolas
@@ -107,79 +99,72 @@ _get_title_current_window()
     }
 }
 
-_volume_mute()
-{
+_volume_mute() {
     SoundGet, current_volume
-    if (current_volume == 100)
-    {
+    if (current_volume == 100) {
         SoundSet, 0
         gui, font, cff0000, Consolas
         GuiControl, font, _volume_icon
         GuiControl,, _volume_icon, 🔈
     }
-    else
-    {
+    else {
         SoundSet, 100
         GuiControl,, _volume_icon, 🔊
     }
 }
 
-tray()
-{
-    ;   <Clock>
-    FormatTime, data_time,, dddd, dd/MM/yyyy | HH:mm tt
-    GuiControlGet, clock_date_time,, _clock
-    if (clock_date_time != data_time)
-    {
-        data_time_len := StrLen(data_time)
-        data_time_len := (data_time_len*7)+22
-        clock_pos := (A_ScreenWidth-data_time_len)
-        GuiControl, move, _clock, w%data_time_len% x%clock_pos%
-        clock := "| "data_time
-        GuiControl,, _clock, %clock%
-    
-        ;   <Volume>
-        if (volume_switch == 1)
-        {
-            volume_pos := (clock_pos-20)
-            gui, font, s12 c%statusbar_font_color%, Consolas
-            gui, Color, c%statusbar_gui_color%
-            GuiControl, font, _volume_icon
-            GuiControl, move, _volume_icon, w15 x%volume_pos%
+tray() {
+    if (widget_clock == 1) {
+        FormatTime, data_time,, dddd, dd/MM/yyyy | HH:mm tt
+        GuiControlGet, clock_date_time,, _clock
+        if (clock_date_time != data_time) {
+            data_time_len := StrLen(data_time)
+            data_time_len := (data_time_len*7)+22
+            clock_pos := (A_ScreenWidth-data_time_len)
+            GuiControl, move, _clock, w%data_time_len% x%clock_pos%
+            clock := "| "data_time
+            GuiControl,, _clock, %clock%
+        
+            ;   <Volume>
+            if (widget_volume == 1) {
+                volume_pos := (clock_pos-20)
+                gui, font, s12 c%statusbar_font_color%, Consolas
+                gui, Color, c%statusbar_gui_color%
+                GuiControl, font, _volume_icon
+                GuiControl, move, _volume_icon, w15 x%volume_pos%
+            }
         }
     }
 }
 
-Update()
-{
+Update() {
     tray()
     current_window()
 }
 
-fullscreen()
-{
+fullscreen() {
 	WinGetPos,,, w, h, A
 	return (w = A_ScreenWidth && h = A_ScreenHeight)
 }
 
-Start()
-{
+Start() {
     ; activate workspace1
     gui, font, s10 c%statusbar_ancient_color%, Consolas
     GuiControl, font, _workspace_1
 }
+
 Start()
 
 ;   <Workspaces>
-!^1::
-    _goto_workspace_1()
+#1::
+    func_goto_workspace_1()
 return
-!^2::
-    _goto_workspace_2()
+#2::
+    func_goto_workspace_2()
 return
 
 ;   <Run>
-!f::
+#r::
     current_window_switch := 0
     GuiControl,, _current_window, Run:
     GuiControl, move, _current_window, w50
@@ -198,10 +183,10 @@ return
 
         ; get value from editbox (IDK WHY NEED THIS !!)
         GuiControlGet, _input_command
+        ;StringLower, lower_input, %_input_command%
         command(_input_command)
         gui, run:Destroy
-        if (current_window_switch == 0)
-        {
+        if (current_window_switch == 0) {
             current_window_switch := 1
             current_window := ""
         }
@@ -209,8 +194,7 @@ return
 
     runGuiEscape:
         gui, run:Destroy
-        if (current_window_switch == 0)
-        {
+        if (current_window_switch == 0) {
             current_window_switch := 1
             current_window := ""
         }
@@ -240,10 +224,26 @@ HideShowTaskbar(action) {
    DllCall("Shell32\SHAppBarMessage", UInt, ABM_SETSTATE, Ptr, &APPBARDATA)
 }
 
+;   Hot-Keys
+#enter::
+    run, cmd /K "cd C:\Users\User\Desktop\"
+return
+
+!v::
+    send %clipboard%
+return
+
+::-certificado::
+    run, %A_ScriptDir%\Interfaces\Certificados.ahk
+return
+
 #SingleInstance, force
 #NoTrayIcon
 #Include, %A_ScriptDir%\modules\VD.ahk
 #Include, %A_ScriptDir%\Commands.ahk
 #Include, %A_ScriptDir%\Utils.ahk
+#Include, %A_ScriptDir%\hotStrings.ahk
 #Include, %A_ScriptDir%\Functions\openWith.ahk
 #Include, %A_ScriptDir%\Functions\openFolder.ahk
+#Include, %A_ScriptDir%\pathEmpresas.ahk
+#Include, %A_ScriptDir%\backend_statusbar.ahk
