@@ -1,18 +1,20 @@
-﻿;[Configs]----------------------------------------------
+﻿;[Configs]----------------------------------
 
 ;  0 = OFF | 1 = ON
 
 global widget_clock             := 1
-global current_window_switch    := 1
 global widget_volume            := 1
+global current_window_switch    := 1
 
-;-------------------------------------------------------
+;[Colors]-----------------------------------
 
+global statusbar_gui_color  := "262626"
+global statusbar_font_color := "ffffff"
+global statusbar_main_color := "8000ff"
+
+;-------------------------------------------
 SetTimer, Update, 200
 global current_window           := ""
-global statusbar_gui_color      := "262626"
-global statusbar_font_color     := "ffffff"
-global statusbar_ancient_color  := "8000ff"
 
 gui, -caption +AlwaysOnTop +ToolWindow
 gui, margin, 2,2
@@ -26,17 +28,14 @@ gui, add, text, Center ym w15 h16 gfunc_window_close, X
 gui, add, text, Center ym w15 h16 gfunc_window_maximize, Λ
 gui, add, text, Center ym w15 h16 gfunc_window_minimize, ‒
 gui, add, text, ym, |
-
-; current window
 gui, add, text, ym v_current_window g_get_title_current_window, %current_window%
-
-
-; tray icons
 gui, add, text, ym v_volume_icon g_volume_mute, 🔊 
 gui, add, text, ym v_clock
 
 
 gui, show, NoActivate w%A_ScreenWidth% y0 h22
+
+;[Actions Keys]---------------------
 
 func_window_close() {
 	WinClose, %current_window%
@@ -47,16 +46,18 @@ func_window_maximize() {
 func_window_minimize() {
 	WinMinimize, %current_window%
 }
+;-----------------------------------
 
+;[Workspaces]--------------------------------------------
 func_goto_workspace_1() {
     VD.goToDesktopNum(1)
-    gui, font, s10 c%statusbar_ancient_color%, Consolas
+    gui, font, s10 c%statusbar_main_color%, Consolas
     GuiControl, font, _workspace_1
     reset_workspace_colors(1)
 }
 func_goto_workspace_2() {
     VD.goToDesktopNum(2)
-    gui, font, s10 c%statusbar_ancient_color%, Consolas
+    gui, font, s10 c%statusbar_main_color%, Consolas
     GuiControl, font, _workspace_2
     reset_workspace_colors(2)
 }
@@ -70,6 +71,7 @@ reset_workspace_colors(index) {
         GuiControl, font, _workspace_1
     }  
 }
+;---------------------------------------------------------
 
 current_window() {
     if (current_window_switch == 1) {
@@ -91,7 +93,7 @@ _get_title_current_window() {
     if (current_window_switch == 1) {
         Clipboard := current_window
 
-        gui, font, s10 c%statusbar_ancient_color%, Consolas
+        gui, font, s10 c%statusbar_main_color%, Consolas
         GuiControl, font, _current_window
         sleep, 2000
         gui, font, s10 c%statusbar_font_color%, Consolas
@@ -149,7 +151,7 @@ fullscreen() {
 
 Start() {
     ; activate workspace1
-    gui, font, s10 c%statusbar_ancient_color%, Consolas
+    gui, font, s10 c%statusbar_main_color%, Consolas
     GuiControl, font, _workspace_1
 }
 
