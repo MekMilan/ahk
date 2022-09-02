@@ -1,29 +1,36 @@
 ﻿global clock := ""
-global text_clock := ""
 
 setTimer, update, 500
 
-
-add_sep("")
-add_text("apenas um teste")
-add_sep("-")
-add_text("teste123")
+start_gui()
 
 update() {
 	clock()
-	GuiControl, text, text_clock, %clock%
 }
 
 start_gui() {
+
+	; make your layout here
+	clock()
+	add_sep("")
+	add_text("just test 123")
+	add_sep("")
+	add_btn("a", "hello")
+
+	; default config
 	gui, +caption +AlwaysOnTop +ToolWindow
-	gui, add, text, ym vtext_clock w200
 	gui, Show, NoActivate y0 h22 w500 ;w%A_ScreenWidth%
 }
-start_gui()
 
 clock() {
-	FormatTime, data_time,, dddd, dd/MM/yyyy | HH:mm tt
-	clock := data_time
+	if (clock == "") {
+		gui, add, text, ym vclock w147
+		clock := "ok"
+	}
+	else {
+		FormatTime, data_time,, dddd, dd/MM/yyyy | HH:mm tt
+		GuiControl, text, clock, %data_time%
+	}
 }
 
 add_sep(char) {
@@ -44,13 +51,19 @@ add_text(text) {
 	}
 }
 
-add_btn(desc) {
+add_btn(desc, function) {
 	if (desc == "") {
-		gui, add, button, ym, BLANK
+		gui, add, text, ym, BTN_BLANK
 	}
 	else {
-		gui, add, button, ym, %desc%
+		gui, add, text, g%function% ym, [ %desc% ]
 	}
+}
+
+; Functions
+
+hello() {
+	msgBox, ok
 }
 
 #SingleInstance, force
