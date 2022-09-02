@@ -105,7 +105,7 @@ _volume_mute() {
     SoundGet, current_volume
     if (current_volume == 100) {
         SoundSet, 0
-        gui, font, cff0000, Consolas
+        gui, font, s10 cff0000, Consolas
         GuiControl, font, _volume_icon
         GuiControl,, _volume_icon, 🔈
     }
@@ -130,7 +130,7 @@ tray() {
             ;   <Volume>
             if (widget_volume == 1) {
                 volume_pos := (clock_pos-20)
-                gui, font, s12 c%statusbar_font_color%, Consolas
+                gui, font, s10 c%statusbar_font_color%, Consolas
                 gui, Color, c%statusbar_gui_color%
                 GuiControl, font, _volume_icon
                 GuiControl, move, _volume_icon, w15 x%volume_pos%
@@ -139,9 +139,45 @@ tray() {
     }
 }
 
+fullScreen_check() {
+    winGetTitle, t, a
+    WinGetPos, x, y, w, h, %t%
+    WinGet, window_state, MinMax, %t%
+    WinGet, aa, ProcessName, %t%
+
+    switch (aa)
+    {
+        case "contabil.exe":
+            return
+        case "EXCEL.EXE":
+            return
+        case "jp2launcher.exe":
+            return
+        case "msedge.exe":
+            return
+        case "AnyDesk.exe":
+            return
+    }
+
+    ; if a window is maximzed then do
+    if (window_state == 1 && x == -8 && y == -8) {
+        static padding_top     := 25
+        static padding_botton  := 0
+        static padding_left    := 0
+        static padding_right   := 0
+
+        WinGet, state, MinMax, % "ahk_id " WinExist(t)
+        if (state == 1) ; Maximized
+            WinRestore
+        winGetPos, x, y, w, h, %t%
+        winMove, %t%,, padding_left, padding_top, A_ScreenWidth, (A_ScreenHeight-padding_top-padding_botton)
+    }
+}
+
 Update() {
     tray()
     current_window()
+    fullScreen_check()
 }
 
 fullscreen() {
@@ -158,12 +194,9 @@ Start() {
 Start()
 
 ;   <Workspaces>
-#1::
-    func_goto_workspace_1()
-return
-#2::
-    func_goto_workspace_2()
-return
+#1::func_goto_workspace_1()
+#2::func_goto_workspace_2()
+
 
 ;   <Run>
 #r::
@@ -208,15 +241,11 @@ return
 !9::
     gui, hide
 	HideShowTaskbar(false)
-    ;WinShow, ahk_class Shell_TrayWnd
-	;WinShow, ahk_class Shell_SecondaryTrayWnd
-    return
+return
 !0::
     gui, show
     HideShowTaskbar(true)
-    ;WinHide, ahk_class Shell_TrayWnd
-	;WinHide, ahk_class Shell_SecondaryTrayWnd
-    return
+return
    
 HideShowTaskbar(action) {
    static ABM_SETSTATE := 0xA, ABS_AUTOHIDE := 0x1, ABS_ALWAYSONTOP := 0x2
@@ -226,26 +255,24 @@ HideShowTaskbar(action) {
    DllCall("Shell32\SHAppBarMessage", UInt, ABM_SETSTATE, Ptr, &APPBARDATA)
 }
 
-;   Hot-Keys
-#enter::
-    run, cmd /K "cd C:\Users\User\Desktop\"
-return
+;   [Hot-Keys]
 
-!v::
-    send %clipboard%
-return
+#enter::run, cmd /K "cd C:\Users\User\Desktop\"
+#b::run, msedge
+!v::send %clipboard%
+^!r::run, %A_ScriptDir%\Statusbar.ahk
 
 ::-certificado::
-    run, %A_ScriptDir%\Interfaces\Certificados.ahk
+run, %A_ScriptDir%\Interfaces\Certificados.ahk
 return
 
 #SingleInstance, force
 #NoTrayIcon
-#Include, %A_ScriptDir%\modules\VD.ahk
-#Include, %A_ScriptDir%\Commands.ahk
-#Include, %A_ScriptDir%\Utils.ahk
-#Include, %A_ScriptDir%\hotStrings.ahk
-#Include, %A_ScriptDir%\Functions\openWith.ahk
-#Include, %A_ScriptDir%\Functions\openFolder.ahk
-#Include, %A_ScriptDir%\pathEmpresas.ahk
-#Include, %A_ScriptDir%\backend_statusbar.ahk
+#Include %A_ScriptDir%\modules\VD.ahk
+#Include %A_ScriptDir%\Commands.ahk
+#Include %A_ScriptDir%\Utils.ahk
+#Include %A_ScriptDir%\hotStrings.ahk
+#Include %A_ScriptDir%\Functions\openWith.ahk
+#Include %A_ScriptDir%\Functions\openFolder.ahk
+#Include %A_ScriptDir%\pathEmpresas.ahk
+#Include %A_ScriptDir%\backend_statusbar.ahk
